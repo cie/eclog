@@ -5,7 +5,7 @@
   "main": "lib",
   "scripts": {
     "test": "jest",
-    "prepublishonly": "tsc"
+    "prepublishOnly": "tsc"
   },
   "author": "",
   "license": "MIT",
