@@ -75,11 +75,18 @@ $(() => 4)
 The eclog is iterable. It iterates the _solutions_ of each of its branches.
 If the branch is a raw value, it's the only solution.
 
+```js
+const x = $(5, 6)
+console.log([...x]) // [5, 6]
+```
+
 If the branch is a builder function, it will be called at least once. If it calls no eclogs, its return value is its only solution.
 
-The builder function is allowed to call eclogs as functions. In this case, the builder function may be called multiple times. At each new call, the called eclogs will return a new set of values so that each combination
+The builder function is allowed to call eclogs as functions. In this case, the builder function might be called multiple times by the system. At each new call, the called eclogs will return a new set of values so that each combination
 
-The builder function must be a pure function in the sense that it must return the same value if the called eclogs (considered the inputs of the builder function) return the same set of values. However, it is allowed to call different eclogs depending on the values of previous eclogs.
+The builder function must be a pure function in the sense that it must return the same value if the called eclogs return the same set of values (return values of eclogs are considered the inputs of the builder function). However, it is allowed to call different eclogs depending on the values of previous eclogs.
+
+If a called eclog has no solutions, it throws a special `Failed` exception, and the current run of the builder function stops.
 
 The `fail` export is an eclog with no solutions.
 
