@@ -36,7 +36,7 @@ the mouse scares the mous
 
 Or to find solutions
 
-````js
+```js
 // Sum of 4 numbers is 10
 const num = $(1, 2, 3, 4, 5, 6, 7, 8, 9)
 const threeNums = $(() => {
@@ -70,7 +70,7 @@ The default export `$` function creates an _eclog_. It accepts zero or more argu
 ```js
 $(4) // same as:
 $(() => 4)
-````
+```
 
 The eclog is iterable. It iterates the _solutions_ of each of its branches.
 If the branch is a raw value, it's the only solution.
