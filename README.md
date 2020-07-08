@@ -90,6 +90,10 @@ If a called eclog has no solutions, it throws a special `Failed` exception, and 
 
 The `fail` export is an eclog with no solutions.
 
+Eclogs can be also called outside of a builder function: in this case they always return their first solution.
+
+Calling an eclog with parameters results in those parameters being passed to its builder functions.
+
 ## Future plans
 
 Store variables during the backtracking, e.g. for max depth or heuristics.

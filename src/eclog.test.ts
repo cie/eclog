@@ -1,5 +1,5 @@
 import Debugger from 'debug'
-import $, { fail } from '.'
+import $, { fail, when } from '.'
 
 describe('eclog', () => {
   test('can call each', () => {
@@ -9,6 +9,8 @@ describe('eclog', () => {
 
     const c = $(() => tens() + ones())
     expect([...c]).toEqual([11, 12, 21, 22])
+    expect(c()).toEqual(11)
+    expect(c()).toEqual(11)
   })
 
   test('dcg', () => {
@@ -44,14 +46,16 @@ describe('eclog', () => {
   test('conjugation', () => {
     const number = $('singular', 'plural')
     const person = $(1, 2, 3)
-    const SUFFIXES = [
-      ['ῶ', 'εῖς', 'εῖ'],
-      ['οῦμεν', 'εῖτε', 'οῦσῐν']
-    ]
-    const suffix = $(
-      () => SUFFIXES[number() == 'singular' ? 0 : 1][person() - 1]
+    const suffix = $((num: string, pers: number) =>
+      when(num, [
+        ['singular', ['ῶ', 'εῖς', 'εῖ'][pers - 1]],
+        ['plural', ['οῦμεν', 'εῖτε', 'οῦσῐν'][pers - 1]]
+      ])
     )
-    const ποιῶ = $(() => `ποι${suffix()}`)
+    const ποιῶ = $(
+      (num: string = number(), pers: number = person()) =>
+        `ποι${suffix(num, pers)}`
+    )
     expect([...ποιῶ]).toEqual([
       'ποιῶ',
       'ποιεῖς',
@@ -60,11 +64,12 @@ describe('eclog', () => {
       'ποιεῖτε',
       'ποιοῦσῐν'
     ])
+    expect(ποιῶ('plural', 1)).toEqual('ποιοῦμεν')
   })
 
   test('sum of four numbers that make 10', () => {
     const num = $(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    const threeNums = $(() => {
+    const fourNums = $(() => {
       const a = num()
       if (a >= 10) fail()
       const b = num()
@@ -73,7 +78,7 @@ describe('eclog', () => {
       if (a + b + c >= 10) fail()
       return [a, b, c, 10 - a - b - c]
     })
-    expect([...threeNums].map(nums => nums.join('+')).slice(0, 10)).toEqual([
+    expect([...fourNums].map(nums => nums.join('+')).slice(0, 10)).toEqual([
       '1+1+1+7',
       '1+1+2+6',
       '1+1+3+5',
@@ -85,5 +90,7 @@ describe('eclog', () => {
       '1+2+2+5',
       '1+2+3+4'
     ])
+    expect(fourNums()).toEqual([1, 1, 1, 7])
+    expect(fourNums()).toEqual([1, 1, 1, 7])
   })
 })
