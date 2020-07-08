@@ -1,10 +1,10 @@
 {
   "name": "eclog",
   "version": "1.0.0",
-  "description": "",
+  "description": "A beautiful backtracking & generator library.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "",
   "license": "MIT",
@@ -15,5 +15,16 @@
     "jest": "^26.1.0",
     "ts-jest": "^26.1.1",
     "typescript": "^3.9.6"
-  }
+  },
+  "dependencies": {
+    "debugger": "^0.35.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cie/eclog.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cie/eclog/issues"
+  },
+  "homepage": "https://github.com/cie/eclog#readme"
 }
