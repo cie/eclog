@@ -1,10 +1,11 @@
 {
   "name": "eclog",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A beautiful backtracking & generator library.",
-  "main": "index.js",
+  "main": "lib",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "prepublishonly": "tsc"
   },
   "author": "",
   "license": "MIT",
@@ -15,9 +16,6 @@
     "jest": "^26.1.0",
     "ts-jest": "^26.1.1",
     "typescript": "^3.9.6"
-  },
-  "dependencies": {
-    "debugger": "^0.35.0"
   },
   "repository": {
     "type": "git",
