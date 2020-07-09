@@ -4,8 +4,8 @@ import $, { fail, when } from '.'
 describe('eclog', () => {
   test('can call each', () => {
     Debugger.enable('eclog')
-    const tens = $(10, 20)
-    const ones = $(1, 2)
+    const tens = $(10, () => 20)
+    const ones = $(() => $(1, 2)())
 
     const c = $(() => tens() + ones())
     expect([...c]).toEqual([11, 12, 21, 22])
@@ -48,10 +48,10 @@ describe('eclog', () => {
     const number = $('singular', 'plural')
     const person = $(1, 2, 3)
     const suffix = $((num: string, pers: number) =>
-      when(num, [
-        ['singular', ['ῶ', 'εῖς', 'εῖ'][pers - 1]],
-        ['plural', ['οῦμεν', 'εῖτε', 'οῦσῐν'][pers - 1]]
-      ])
+      when(num, {
+        singular: when(pers, { 1: 'ῶ', 2: 'εῖς', 3: 'εῖ' }),
+        plural: when(pers, { 1: 'οῦμεν', 2: 'εῖτε', 3: 'οῦσῐν' })
+      })
     )
     const ποιῶ = $(
       (num: string = number(), pers: number = person()) =>
@@ -93,5 +93,16 @@ describe('eclog', () => {
     ])
     expect(fourNums()).toEqual([1, 1, 1, 7])
     expect(fourNums()).toEqual([1, 1, 1, 7])
+  })
+
+  test('calling with arguments', () => {
+    const num = $(1, 2, 3, 4, 5, 6, 7, 8, 9)
+    const divisorOf = $((n: number) => {
+      const d = num()
+      if (n % d != 0) fail()
+      return d
+    })
+    const divisorOf9 = $(() => divisorOf(9))
+    expect([...divisorOf9]).toEqual([1, 3, 9])
   })
 })
