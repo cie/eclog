@@ -1,5 +1,5 @@
 import Debugger from 'debug'
-import $, { fail, when } from '.'
+import $, { fail, when, set, reset } from '.'
 
 describe('eclog', () => {
   test('can call each', () => {
@@ -32,6 +32,50 @@ describe('eclog', () => {
       'the cat hates a mouse',
       'the mouse scares the cat',
       'the mouse scares the mouse'
+    ])
+  })
+
+  test('dcg with grammatical agreement', () => {
+    // https://www-users.cs.umn.edu/~gini/prolog/dcg.html
+    const is = <T>(a: T, b: T): T => (a === b ? a : fail())
+    const singular = Symbol(),
+      plural = Symbol()
+    type N = typeof singular | typeof plural
+    const number = $<N, []>(singular, plural)
+    const sentence = $((n: N = number()) => [
+      ...noun_phrase(n),
+      ...verb_phrase(n)
+    ])
+    const noun_phrase = $((n: N) => [...determiner(n), ...noun(n)])
+    const noun = $((n: N) =>
+      when(n, {
+        [singular]: $(['cat'], ['man'], ['mouse']),
+        [plural]: $(['cats'], ['men'], ['mice'])
+      })
+    )
+    const determiner = $(
+      n => (is(n, singular), ['a']),
+      ['the'],
+      n => (is(n, plural), [])
+    )
+    const verb_phrase = $((n: N) => [...verb(n), ...noun_phrase(number())])
+    const verb = $((n: N) =>
+      when(n, {
+        [singular]: $(['scares'], ['hates']),
+        [plural]: $(['scare'], ['hate'])
+      })
+    )
+    expect(sentence.map(x => x.join(' ')).slice(0, 10)).toEqual([
+      'a cat scares a cat',
+      'a cat scares a man',
+      'a cat scares a mouse',
+      'a cat scares the cat',
+      'a cat scares the man',
+      'a cat scares the mouse',
+      'a cat scares the cats',
+      'a cat scares the men',
+      'a cat scares the mice',
+      'a cat scares cats'
     ])
   })
 
@@ -93,17 +137,6 @@ describe('eclog', () => {
     ])
     expect(fourNums()).toEqual([1, 1, 1, 7])
     expect(fourNums()).toEqual([1, 1, 1, 7])
-  })
-
-  test('calling with arguments', () => {
-    const num = $(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    const divisorOf = $((n: number) => {
-      const d = num()
-      if (n % d != 0) fail()
-      return d
-    })
-    const divisorOf9 = $(() => divisorOf(9))
-    expect([...divisorOf9]).toEqual([1, 3, 9])
   })
 
   test('gcd', () => {

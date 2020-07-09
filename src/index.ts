@@ -8,7 +8,9 @@ type Variable<T, A extends unknown[]> = {
 type Stack = Variable<any, any>[]
 type Eclog<T, A extends unknown[] = []> = {
   (...args: A): T
+  branches_stack: Branch<T, A>[][]
   [Symbol.iterator]: (args: A) => Generator<T, void, void>
+  map: <R>(fn: (el: T) => R) => R[]
 }
 
 type Branch<T, A extends unknown[]> = ((...args: A) => T) | T
@@ -34,7 +36,9 @@ function $<T, A extends unknown[]> (
       return value
     }
   }
+  eclog.branches_stack = [branches]
   eclog[Symbol.iterator] = function * (myArgs: A = [] as any) {
+    const branches = eclog.branches_stack[0]
     for (const branch of branches.map(evalBranch)) {
       let stack: Stack = []
       do {
@@ -55,6 +59,11 @@ function $<T, A extends unknown[]> (
         yield res
       } while (advance(stack))
     }
+  }
+  eclog.map = function<R> (fn: (el: T) => R): R[] {
+    const res = [] as R[]
+    for (const el of eclog) res.push(fn(el))
+    return res
   }
   return eclog
 }
@@ -86,8 +95,24 @@ export const fail: Eclog<never> = $()
 
 export function when<T extends string | number | symbol, R> (
   x: T,
-  branches: { [K in T]: R }
+  branches: { [K in T]: (() => R) | R }
 ): R {
-  if (x in branches) return branches[x]
+  if (x in branches) {
+    const b = branches[x]
+    return b instanceof Function ? b() : b
+  }
   return fail()
 }
+
+export const set = $<any, any[]>(
+  <T, A extends unknown[]>(eclog: Eclog<T, A>, ...branches: Branch<T, A>[]) => {
+    eclog.branches_stack.unshift(branches)
+  },
+  <T, A extends unknown[]>(eclog: Eclog<T, A>, ...branches: Branch<T, A>[]) => {
+    eclog.branches_stack.shift()
+    fail()
+  }
+)
+
+export const reset = (eclog: Eclog<any, any>) =>
+  set(eclog, ...eclog.branches_stack[eclog.branches_stack.length - 1])
