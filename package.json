@@ -1,6 +1,6 @@
 {
   "name": "eclog",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A beautiful backtracking & generator library.",
   "main": "lib",
   "scripts": {
