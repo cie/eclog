@@ -14,6 +14,7 @@ describe('eclog', () => {
   })
 
   test('dcg', () => {
+    // https://www-users.cs.umn.edu/~gini/prolog/dcg.html
     const noun = $('cat', 'mouse')
     const verb = $('scares', 'hates')
     const determiner = $('the', 'a')

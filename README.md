@@ -13,6 +13,7 @@ console.log([...card].slice(0, 13).join(' '))
 Use it to generate sentences
 
 ```js
+// from https://www-users.cs.umn.edu/~gini/prolog/dcg.html
 const noun = $('cat', 'mouse')
 const verb = $('scares', 'hates')
 const determiner = $('the', 'a')
