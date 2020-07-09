@@ -105,4 +105,14 @@ describe('eclog', () => {
     const divisorOf9 = $(() => divisorOf(9))
     expect([...divisorOf9]).toEqual([1, 3, 9])
   })
+
+  test('gcd', () => {
+    const num = $(9, 8, 7, 6, 5, 4, 3, 2, 1)
+    const divisor = (a: number, b: number) => (b % a == 0 ? a : fail())
+    const divisorOf = $((n: number) => divisor(num(), n))
+    const eq = (a: number, b: number) => (a == b ? a : fail())
+    const gcd = $((a: number, b: number) => eq(divisorOf(a), divisorOf(b)))
+    expect(gcd(9, 6)).toBe(3) // 3
+    expect(gcd(8, 6)).toBe(2) // 2
+  })
 })
