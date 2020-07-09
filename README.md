@@ -91,7 +91,7 @@ const x = $(
 console.log([...x]) // [5, 6]
 ```
 
-The builder function is allowed to call eclogs as functions. In this case, the builder function might be called multiple times by the system. At each new call, the called eclogs will return a new set of values so that each combination
+The builder function is allowed to call eclogs as functions. In this case, the builder function might be called multiple times by the system. At each new call, the called eclogs will return a new set of values so that each combination is used.
 
 ```js
 const name = $('Jane', 'John')
@@ -125,6 +125,15 @@ The builder function is allowed to call an eclog several times:
 const num = $(1, 2)
 const pair = $(() => [num(), num()])
 console.log([...pair]) // [[1, 1], [1, 2], [2, 1], [2, 2]]
+```
+
+As a consequence of the above, an eclog can be used as a builder function:
+
+```js
+const bird = $('chicken', 'ostrich')
+const mammal = $('goat', 'lion')
+const animal = $(bird, mammal)
+console.log([...animal]) // ['chicken', 'ostrich', 'goat', 'lion']
 ```
 
 If a called eclog has no solutions, it throws a special `Failed` exception, and the current run of the builder function stops immediately. The builder may be re-invoked if there is possibility of having other solutions by returning other values of called eclogs.
