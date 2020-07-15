@@ -22,8 +22,11 @@ function $<T, A extends unknown[]> (
   ...branches: (T | ((...args: A) => T))[]
 ): Eclog<T, A> {
   const eclog: Eclog<T, A> = function (...myArgs: A) {
-    const stack = current_stack ?? ((current_stack_pointer = 0), [])
-    if (current_stack_pointer >= stack.length) {
+    const stack = current_stack ?? ((current_stack_pointer = 0), []) // called outside of computation
+    const existingVar = stack.findIndex(v => v.eclog === eclog)
+    if (~existingVar && existingVar < current_stack_pointer) {
+      return stack[existingVar].current.value
+    } else if (current_stack_pointer >= stack.length) {
       const it = eclog[Symbol.iterator](myArgs)
       const current = it.next()
       if (current.done) throw new Failed()
@@ -68,8 +71,6 @@ function $<T, A extends unknown[]> (
   return eclog
 }
 
-export default $
-
 function advance (stack: Stack) {
   for (let i = stack.length - 1; i >= 0; --i) {
     stack[i].current = stack[i].it.next()
@@ -78,6 +79,8 @@ function advance (stack: Stack) {
   }
   return false
 }
+
+export default $
 
 export class Failed extends Error {
   constructor () {
@@ -95,11 +98,11 @@ export const fail: Eclog<never> = $()
 
 export function when<T extends string | number | symbol, R> (
   x: T,
-  branches: { [K in T]: (() => R) | R }
+  cases: { [K in T]: (() => R) | R }
 ): R {
-  if (x in branches) {
-    const b = branches[x]
-    return b instanceof Function ? b() : b
+  if (x in cases) {
+    const c = cases[x]
+    return c instanceof Function ? c() : c
   }
   return fail()
 }

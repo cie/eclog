@@ -79,6 +79,51 @@ describe('eclog', () => {
     ])
   })
 
+  test('dcg with grammatical agreement using set', () => {
+    // https://www-users.cs.umn.edu/~gini/prolog/dcg.html
+    const is = <T>(a: T, b: T): T => (a === b ? a : fail())
+    const singular = Symbol(),
+      plural = Symbol()
+    type N = typeof singular | typeof plural
+    const number = $<N, []>(singular, plural)
+    const sentence = $(
+      () => (set(number, number()), [...noun_phrase(), ...verb_phrase()])
+    )
+    const noun_phrase = $(
+      () => (set(number, number()), [...determiner(), ...noun()])
+    )
+    const noun = $(() =>
+      when(number(), {
+        [singular]: $(['cat'], ['man'], ['mouse']),
+        [plural]: $(['cats'], ['men'], ['mice'])
+      })
+    )
+    const determiner = $(
+      () => (is(number(), singular), ['a']),
+      ['the'],
+      () => (is(number(), plural), [])
+    )
+    const verb_phrase = $(() => [...verb(), ...(reset(number), noun_phrase())])
+    const verb = $(() =>
+      when(number(), {
+        [singular]: $(['scares'], ['hates']),
+        [plural]: $(['scare'], ['hate'])
+      })
+    )
+    expect(sentence.map(x => x.join(' ')).slice(0, 10)).toEqual([
+      'a cat scares a cat',
+      'a cat scares a man',
+      'a cat scares a mouse',
+      'a cat scares the cat',
+      'a cat scares the man',
+      'a cat scares the mouse',
+      'a cat scares the cats',
+      'a cat scares the men',
+      'a cat scares the mice',
+      'a cat scares cats'
+    ])
+  })
+
   test('cards', () => {
     const suit = $(...'♠♦♣♥')
     const num = $(...'A23456789', '10', ...'JQK')
@@ -115,11 +160,11 @@ describe('eclog', () => {
   test('sum of four numbers that make 10', () => {
     const num = $(1, 2, 3, 4, 5, 6, 7, 8, 9)
     const fourNums = $(() => {
-      const a = num()
+      const a = $(num)()
       if (a >= 10) fail()
-      const b = num()
+      const b = $(num)()
       if (a + b >= 10) fail()
-      const c = num()
+      const c = $(num)()
       if (a + b + c >= 10) fail()
       return [a, b, c, 10 - a - b - c]
     })
@@ -142,9 +187,13 @@ describe('eclog', () => {
   test('gcd', () => {
     const num = $(9, 8, 7, 6, 5, 4, 3, 2, 1)
     const divisor = (a: number, b: number) => (b % a == 0 ? a : fail())
-    const divisorOf = $((n: number) => divisor(num(), n))
+    const divisorOf = $((n: number) => divisor($(num)(), n))
     const eq = (a: number, b: number) => (a == b ? a : fail())
     const gcd = $((a: number, b: number) => eq(divisorOf(a), divisorOf(b)))
+    const d1 = $(() => divisorOf(4))
+    expect([...d1]).toEqual([4, 2, 1])
+    const d3 = $(() => gcd(4, 6))
+    expect([...gcd]).toEqual([2, 1])
     expect(gcd(9, 6)).toBe(3) // 3
     expect(gcd(8, 6)).toBe(2) // 2
   })
