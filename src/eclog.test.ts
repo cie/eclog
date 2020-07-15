@@ -1,5 +1,5 @@
 import Debugger from 'debug'
-import $, { fail, when, set, reset } from '.'
+import $, { fail, when, set, reset, oneOf } from '.'
 
 describe('eclog', () => {
   test('can call each', () => {
@@ -64,6 +64,47 @@ describe('eclog', () => {
         [singular]: $(['scares'], ['hates']),
         [plural]: $(['scare'], ['hate'])
       })
+    )
+    expect(sentence.map(x => x.join(' ')).slice(0, 10)).toEqual([
+      'a cat scares a cat',
+      'a cat scares a man',
+      'a cat scares a mouse',
+      'a cat scares the cat',
+      'a cat scares the man',
+      'a cat scares the mouse',
+      'a cat scares the cats',
+      'a cat scares the men',
+      'a cat scares the mice',
+      'a cat scares cats'
+    ])
+  })
+
+  test('dcg with grammatical agreement 2', () => {
+    // https://www-users.cs.umn.edu/~gini/prolog/dcg.html
+    enum Num {
+      singular,
+      plural
+    }
+    const { singular, plural } = Num
+    const number = $(singular, plural)
+    const sentence = $(() => [...noun_phrase(), ...verb_phrase()])
+    const noun_phrase = $(() => [...determiner(), ...noun()])
+    const noun = $(
+      () => (number.is(singular), number(), oneOf(['cat'], ['man'], ['mouse'])),
+      () => (number.is(plural), number(), oneOf(['cats'], ['men'], ['mice']))
+    )
+    const determiner = $(
+      () => (number.is(singular), number(), ['a']),
+      ['the'],
+      () => (number.is(plural), number(), [])
+    )
+    const verb_phrase = $(() => [
+      ...verb(),
+      ...oneOf(() => (reset(number), noun_phrase()))
+    ])
+    const verb = $(
+      () => (number.is(singular), number(), oneOf(['scares'], ['hates'])),
+      () => (number.is(plural), number(), oneOf(['scare'], ['hate']))
     )
     expect(sentence.map(x => x.join(' ')).slice(0, 10)).toEqual([
       'a cat scares a cat',
@@ -148,4 +189,26 @@ describe('eclog', () => {
     expect(gcd(9, 6)).toBe(3) // 3
     expect(gcd(8, 6)).toBe(2) // 2
   })
+  test('mustBe', () => {
+    const num = $(1, 2, 3, 4, 5)
+    expect([...($(() => (num.mustBe(n => n < 4), num())) as any)]).toEqual([
+      1,
+      2,
+      3
+    ])
+    expect([
+      ...($(
+        () => (num.mustBe(n => n < 4), num.mustBe(n => n > 1), num())
+      ) as any)
+    ]).toEqual([2, 3])
+    expect([
+      ...($(
+        () => (num.mustBe(n => n < 4), num.mustBe(n => n > 5), num())
+      ) as any)
+    ]).toEqual([])
+  })
 })
+
+function error (x: any) {
+  throw x
+}

@@ -11,6 +11,8 @@ type Eclog<T, A extends unknown[] = []> = {
   branches_stack: Branch<T, A>[][]
   [Symbol.iterator]: (args: A) => Generator<T, void, void>
   map: <R>(fn: (el: T) => R) => R[]
+  is: (...branches: Branch<T, A>[]) => void
+  mustBe: (predicate: (el: T) => boolean) => void
 }
 
 type Branch<T, A extends unknown[]> = ((...args: A) => T) | T
@@ -65,6 +67,27 @@ function $<T, A extends unknown[]> (
     for (const el of eclog) res.push(fn(el))
     return res
   }
+  eclog.mustBe = function (fn: (v: T) => boolean) {
+    const currentBranches = eclog.branches_stack[0]
+    $(
+      () => {
+        eclog.branches_stack.unshift([
+          (...args: A) => {
+            const v = oneOf(...currentBranches)
+            if (!fn(v)) fail()
+            return v
+          }
+        ])
+      },
+      () => {
+        eclog.branches_stack.shift()
+        fail()
+      }
+    )()
+  }
+  eclog.is = function (...branches: Branch<T, A>[]) {
+    this.mustBe(v => v == oneOf(...branches))
+  }
   return eclog
 }
 
@@ -116,3 +139,7 @@ export const set = $<any, any[]>(
 
 export const reset = (eclog: Eclog<any, any>) =>
   set(eclog, ...eclog.branches_stack[eclog.branches_stack.length - 1])
+
+export const oneOf = <T>(...branches: Branch<T, []>[]) => $(...branches)()
+
+export const eq = <T>(a: T, b: T) => (a == b ? a : fail())
